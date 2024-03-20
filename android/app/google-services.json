@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "628545470546",
+    "firebase_url": "https://fravarapp-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "fravarapp",
+    "storage_bucket": "fravarapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628545470546:android:9573c2ac7c137081c31f8b",
+        "android_client_info": {
+          "package_name": "com.example.fravar_nfc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpj3t0QNaKHPflUmLtaAGlMaRvD8OAZ54"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
