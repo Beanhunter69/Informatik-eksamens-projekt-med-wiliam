@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:fravar_nfc/pages/login_page.dart';
 import 'home_page.dart';
 
+//Meget af koden er lavet udfra videon https://www.youtube.com/watch?v=4fucdtPwTWI&list=RDCMUCVj9dwfXRmwyYmiWnk-qCCQ&index=11&ab_channel=MitchKoko
+//Den bruges til login siden, auth siden, my_buttonm, my_textfield og opsætning af databasen.
+
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
 
@@ -12,11 +15,12 @@ class AuthPage extends StatelessWidget {
       body: StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
-            // logged in
+            //Tjekker om brugen er logget ind
             if (snapshot.hasData) {
+              //sender brugen til HomePage()
               return const HomePage();
 
-              // not logged in
+              //Hvis brugen ikke er logget ind skal de være på LoginPage()
             } else {
               return LoginPage();
             }
@@ -24,6 +28,7 @@ class AuthPage extends StatelessWidget {
     );
   }
 
+//funktion til at logge brugen ud
   void signOut(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
   }

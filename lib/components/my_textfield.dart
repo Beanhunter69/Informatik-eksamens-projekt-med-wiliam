@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+//tilpasset tekstfelt widget.
 class MyTextField extends StatelessWidget {
   final controller;
   final String hintText;
   final bool obscureText;
 
+//konstruktøren
   const MyTextField({
     super.key,
     required this.controller,
@@ -12,6 +14,8 @@ class MyTextField extends StatelessWidget {
     required this.obscureText,
   });
 
+//Det visuelle for knappen
+//https://docs.flutter.dev/ui/widgets/basics
   @override
   Widget build(BuildContext context) {
     return Padding(

@@ -3,18 +3,28 @@ import 'package:fravar_nfc/components/my_button.dart';
 import 'package:fravar_nfc/components/my_textfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//Meget af koden er lavet udfra videon https://www.youtube.com/watch?v=4fucdtPwTWI&list=RDCMUCVj9dwfXRmwyYmiWnk-qCCQ&index=11&ab_channel=MitchKoko
+//Den bruges til login siden auth siden og opsætning af databasen.
+
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
 
-  // tekst redigering controller
+  // tekst redigering kontroller
+  // dokumentation er fundet fra https://api.flutter.dev/flutter/widgets/TextEditingController-class.html
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
+//funktion til at logge brugenen ind
+// dokumentation fundet på https://firebase.google.com/docs/auth/android/password-auth
   void logUserIn() async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text, password: passwordController.text);
   }
 
+//det grafiske
+//Dokumentatonen brug til det grafiske
+//https://docs.flutter.dev/ui/widgets/basics
+//https://api.flutter.dev/flutter/widgets/DefaultTextStyle-class.html
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,7 +46,7 @@ class LoginPage extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                //Velkommen tilbage
+                //Velkommen tilbage tekst
                 const Text(
                   'Velkommen tilbage',
                   style: TextStyle(
@@ -82,16 +92,12 @@ class LoginPage extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                //log-in
+                //log-in knap
                 MyButton(
                   onTap: logUserIn,
                 ),
 
                 const SizedBox(height: 10),
-
-                //continue
-
-                //google appel (skal ikke med i færdige produkt)
               ],
             ),
           ),

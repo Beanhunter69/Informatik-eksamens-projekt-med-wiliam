@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+// tilpasset knap widget
 class MyButton extends StatelessWidget {
   final Function()? onTap;
 
+  //kosntruktør
   const MyButton({super.key, required this.onTap});
 
+//design
+//https://docs.flutter.dev/ui/widgets/basics
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
