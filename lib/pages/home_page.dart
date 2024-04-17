@@ -5,13 +5,14 @@ import 'auth_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// globale variabler
+//globale variabler
 String? currentUserEmail;
 String globalTagData = '';
 String lesson = '';
 int typeScan = 0;
 int _buttonState = 0;
 
+//Køre programmet
 void main() {
   runApp(const HomePage());
 }
@@ -23,39 +24,44 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+//gemmer variblerne inden under widgeten
 class _HomePageState extends State<HomePage> {
   String _nfcTagData = '';
   bool _tagDetected = false;
   bool tjekud = false;
+  bool _showScanText = false;
 
-//det grafiske
+//det grafiske (knapper, baggrund, tekst osv.)
 //Dokumentatonen brug til det grafiske
 //https://docs.flutter.dev/ui/widgets/basics
 //https://api.flutter.dev/flutter/widgets/DefaultTextStyle-class.html
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //design af baggrund og tekst
+      //baggrunds farve
       backgroundColor: const Color.fromARGB(255, 40, 33, 255),
       appBar: AppBar(
+        //UI centeret titel osv.
         centerTitle: true,
         backgroundColor: const Color.fromARGB(255, 40, 33, 200),
+        //titlen
         title: const Text(
           'NFC Reader',
           style: TextStyle(color: Colors.white),
         ),
       ),
+      //opretter en centeret body til knapper og tekst
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // Vis kun hvis _buttonState er forskellig fra 1
+            //viser start nfc reading knappen hvis _buttonstate er 0
             if (_buttonState == 0)
               ElevatedButton(
-                //når knappen trykkes skal _startNFCReading starte
+                //hvis knappen trykkes kaldes _startNFCReading
                 onPressed: _tagDetected ? null : _startNFCReading,
                 child: SizedBox(
-                  //design
+                  //design af knap
                   width: 120,
                   height: 120,
                   child: Center(
@@ -75,23 +81,45 @@ class _HomePageState extends State<HomePage> {
                       : Colors.white,
                 ),
               ),
-
-            // Vis kun hvis _buttonState er lig med 1
+            //tjek ud knapppen vises hvis _buttonstate er 1
             if (_buttonState == 1)
               ElevatedButton(
-                //starter _startNfcReading når knappen trykkes
+                //kalder _startNFCReading
                 onPressed: _startNFCReading,
-                child: Text('Tjek ud'),
+                //design af knap
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: Center(
+                    child: Text(
+                      'Tjek ud',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  shape: CircleBorder(),
+                  padding: EdgeInsets.all(20),
+                  backgroundColor: Colors.white,
+                ),
               ),
             const SizedBox(height: 60),
+            //Hvis _showScanText er sant vises scan NFC tag
+            //teksten vises når start nfc reading eller tjek ud er trykket på
+            Text(
+              _showScanText ? 'Scan NFC Tag' : '',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            const SizedBox(height: 20),
+            //Viser dataen fra nfctagget
+            // så vis dataet er registeret eller vis der er sket en fejl osv.
             Text(
               'NFC Tag Detected: $_nfcTagData',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
-            const SizedBox(
-                height: 20), // Tilføjet mellemrum mellem tekst og knap
+            const SizedBox(height: 20),
+            // log ud knappen
             ElevatedButton(
-              //log ud knap skalder_signOut
               onPressed: () {
                 _signOut(context);
               },
@@ -103,41 +131,44 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-//funtiont til at scanne nfctag
+//funktion til at læse nfctag
 //Dele af _startNFCReading() er taget fra https://medium.com/@codetrade/implement-nfc-in-flutter-to-transfer-peer-to-peer-data-64efeaa5377c d 11.03.2024
   void _startNFCReading() async {
+    //gør at _showscantext er sand
+    setState(() {
+      _showScanText = true;
+    });
+
+    //tjekker om nfc scanning er muligt
     try {
       bool isAvailable = await NfcManager.instance.isAvailable();
 
+      //hvis der er scanner den nfc tagget
       if (isAvailable) {
         NfcManager.instance.startSession(
           onDiscovered: (NfcTag tag) async {
             setState(() {
-              //Hvis _buttonsState er lig med 1 skal den tjekke ud. Dette sker når nfc tagget er scannet en gang.
+              //tjekker om tjek ud er sket
               if (_buttonState == 1) {
                 tjekud = true;
-                _buttonState =
-                    0; // Sætter _buttonState tilbage til 0 når scanningen er færdig
+                _buttonState = 0;
                 print("tjek ud coplete");
               }
 
-              //henter tagid'et/data
+              //sætter forskellige variabler for eksemoelk nfc tag id
               globalTagData = tag.data['nfca']['identifier'].toString();
-              //sææter variablen så teskten kan ændre til fremøde er registerert
               _nfcTagData = '\nFremmøde er registreret';
-              //variablen brug til at sætte at et tag er fundet.
               _tagDetected = true;
-              //kalder _getLessonFromTag som finder ud af hvilket lektion tagget er tilsvarende.
+              //finder lektionen
               lesson = _getLessonFromTag(globalTagData);
-              //kalder de to funktioner
               _updateFirestore();
               _startResetTimer();
-              //printer tag data'et
               print('Tag Data: $globalTagData');
+              _showScanText = false; // Fjerner teksten her
             });
           },
         );
-        //eventuelle fejl registeres
+        //evenutelle fejl
       } else {
         setState(() {
           _nfcTagData = 'NFC not available.';
@@ -150,7 +181,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  //funktion til at bestemme lektionen baseret på tagid'et
+  //Finder hvilken lektion tagget er ved at kende forskellige tags id
   String _getLessonFromTag(String tagData) {
     if (tagData == '[4, 217, 213, 169, 121, 0, 0]' ||
         tagData == '[4, 39, 139, 178, 121, 0, 0]') {
@@ -161,27 +192,25 @@ class _HomePageState extends State<HomePage> {
     } else if (tagData == '[4, 125, 185, 176, 121, 0, 0]' ||
         tagData == '[4, 51, 115, 169, 121, 0, 0]') {
       return 'TEKNIKFAG';
-      // Hvis taggen ikke matcher nogen kendt lektion
     } else {
       return 'Ukendt';
     }
   }
 
-  //startes når nfctagger indlæses
+// Sørger for eleven har tjekket ud
   void _startResetTimer() {
-    //hvis der er tjekket ud sørger den for variablerne til sat tilbage
-    //så der kan scannes et nyt tag
     if (tjekud == true) {
       setState(() {
         _tagDetected = false;
         _nfcTagData = '';
         tjekud = false;
       });
-      //hvis tjek ud ikke er taget starter der en timer på 10 sekunder der gør at tjek ud knappen bliver vist efter.
     } else {
+      //starter en timer efter 10 sekunder hvis der ikke er blevet tjekket ud
       Timer(Duration(seconds: 10), () {
         _tjekUdUdLobet();
         setState(() {
+          //gør at tjek ud knappen er synlig
           _buttonState = 1;
           _tagDetected = false;
           _nfcTagData = '';
@@ -190,8 +219,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+//giver 10 sekunder tuk at tjkke ud og så  kalder den _setUserEmailTofalse
   void _tjekUdUdLobet() {
-    //giver 10 sekunder til at tjekke ud enden der bliver givet fravær.
     Timer(Duration(seconds: 10), () {
       if (!tjekud) {
         print("tiden er udløbet");
@@ -204,23 +233,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  //opdatere databsen
+  //dokumentationen til at ændre data i databsen er fundet på firebase hjemmeside https://firebase.google.com/docs/firestore/manage-data/add-data
   void _updateFirestore() async {
     try {
       //henter emailen/brugernavnet der er logget ind som bruges til at opdatere den rigtige bruges fravær
       String currentUserEmail = FirebaseAuth.instance.currentUser!.email!;
-      //gør syntaxen korrekt i emailen
       String sanitizedEmail = currentUserEmail.replaceAll('.', '-');
       sanitizedEmail = sanitizedEmail.replaceAll('-', '.');
 
-      //dokumentationen er funder på firebase hjemmeside https://firebase.google.com/docs/firestore/manage-data/add-data
+      //tjekker om stien er i databasen
       var userSnapshot = await FirebaseFirestore.instance
           .collection('3.A')
           .doc(sanitizedEmail)
           .get();
 
-      //hvis databasen kunne finde lokationen på dateet skal den opdatere lektionen
+      // hvis stien er der køre koden der opdatere lektionen til true
       if (userSnapshot.exists) {
-        //tjekker om lektionen allerede er opdateret
         if (!(userSnapshot.data()![lesson] ?? false)) {
           await FirebaseFirestore.instance
               .collection('3.A')
@@ -228,7 +257,7 @@ class _HomePageState extends State<HomePage> {
               .update({lesson: true});
           print('Firestore opdateret med lektion: $lesson');
         }
-        //eventuelle fejl
+        //evenetuelle fejæ
       } else {
         print(
             'Dokumentet for brugeren findes ikke i Firestore-databasen under "3.A".');
@@ -247,19 +276,19 @@ class _HomePageState extends State<HomePage> {
 
       sanitizedEmail = sanitizedEmail.replaceAll('-', '.');
 
-      //finder om lokationen findes i datasanen
+      //tjekker om lokationene er i databasen
       var userSnapshot = await FirebaseFirestore.instance
           .collection('3.A')
           .doc(sanitizedEmail)
           .get();
 
-      //hvis den gør og _buttonState er lig med 1 skal der gives fravær
+      //hvis loaktionen er i databasen ig buttonState er 1 køre koden der giver fravær
       if (userSnapshot.exists && _buttonState == 1) {
         print(tjekud);
         print(_nfcTagData);
         print(_tagDetected);
         print(_buttonState);
-        //opdater lektionen til false for bruger
+
         await FirebaseFirestore.instance
             .collection('3.A')
             .doc(sanitizedEmail)
@@ -268,7 +297,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _buttonState = 0;
         });
-        //hvis der er tjekket ud
+        //hvis tjek ud er klaret printer den det og sætter _buttonState til 0
       } else {
         print('Tjek ud belv gennemført');
         setState(() {
@@ -281,7 +310,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-// Log ud af Firebase Authentication ved brug af auth_page.dart
+//funktion til at logge brugeren ud
   void _signOut(BuildContext context) {
     AuthPage().signOut(context);
   }
