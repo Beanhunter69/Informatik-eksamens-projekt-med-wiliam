@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+//Meget af koden er lavet udfra videon https://www.youtube.com/watch?v=4fucdtPwTWI&list=RDCMUCVj9dwfXRmwyYmiWnk-qCCQ&index=11&ab_channel=MitchKoko
+//Den bruges til login siden auth siden og my_button og my_textfield.
 // tilpasset knap widget
 class MyButton extends StatelessWidget {
   final Function()? onTap;

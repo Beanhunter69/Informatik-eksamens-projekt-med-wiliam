@@ -55,6 +55,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const SizedBox(height: 80),
             //viser start nfc reading knappen hvis _buttonstate er 0
             if (_buttonState == 0)
               ElevatedButton(
@@ -103,21 +104,24 @@ class _HomePageState extends State<HomePage> {
                   backgroundColor: Colors.white,
                 ),
               ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 30),
             //Hvis _showScanText er sant vises scan NFC tag
             //teksten vises når start nfc reading eller tjek ud er trykket på
-            Text(
-              _showScanText ? 'Scan NFC Tag' : '',
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            //Viser dataen fra nfctagget
-            // så vis dataet er registeret eller vis der er sket en fejl osv.
             Text(
               'NFC Tag Detected: $_nfcTagData',
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
+
             const SizedBox(height: 20),
+
+            Text(
+              _showScanText ? 'Scan NFC Tag' : '',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            //Viser dataen fra nfctagget
+            // så vis dataet er registeret eller vis der er sket en fejl osv.
+
+            const SizedBox(height: 70),
             // log ud knappen
             ElevatedButton(
               onPressed: () {
